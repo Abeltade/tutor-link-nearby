@@ -27,7 +27,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-gradient-primary shadow-glow transition-all hover:scale-105"
-                onClick={() => navigate('/role-select')}
+                onClick={() => navigate('/auth')}
               >
                 Get Started
               </Button>
@@ -109,7 +109,7 @@ const Index = () => {
             <Button 
               size="lg" 
               className="bg-gradient-primary shadow-glow transition-all hover:scale-105"
-              onClick={() => navigate('/role-select')}
+              onClick={() => navigate('/auth')}
             >
               Start Connecting Now
             </Button>
@@ -130,7 +130,7 @@ const Index = () => {
           <Button 
             size="lg" 
             className="bg-gradient-primary shadow-glow transition-all hover:scale-105"
-            onClick={() => navigate('/role-select')}
+            onClick={() => navigate('/auth')}
           >
             Join TutorConnect
           </Button>

@@ -1,10 +1,56 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { GraduationCap, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const RoleSelect = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Check if user is authenticated
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate('/auth');
+      } else {
+        setUserId(session.user.id);
+      }
+    });
+  }, [navigate]);
+
+  const handleRoleSelect = async (role: 'student' | 'tutor') => {
+    if (!userId || loading) return;
+
+    setLoading(true);
+    try {
+      // Store user role in database
+      const { error } = await supabase
+        .from('user_roles')
+        .insert({
+          user_id: userId,
+          role: role,
+        });
+
+      if (error && !error.message.includes('duplicate')) {
+        throw error;
+      }
+
+      // Navigate to appropriate profile page
+      navigate(`/profile/${role}`);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
@@ -22,7 +68,7 @@ const RoleSelect = () => {
           {/* Student Role */}
           <Card 
             className="group cursor-pointer bg-gradient-card border-border/50 p-8 shadow-soft transition-all hover:scale-105 hover:shadow-glow"
-            onClick={() => navigate('/profile/student')}
+            onClick={() => handleRoleSelect('student')}
           >
             <div className="mb-6 inline-flex rounded-full bg-primary/10 p-6 text-primary transition-colors group-hover:bg-gradient-primary group-hover:text-white">
               <Users className="h-12 w-12" />
@@ -49,15 +95,16 @@ const RoleSelect = () => {
             </ul>
             <Button 
               className="w-full bg-gradient-primary shadow-glow transition-all group-hover:scale-105"
+              disabled={loading}
             >
-              Continue as Student
+              {loading ? "Loading..." : "Continue as Student"}
             </Button>
           </Card>
 
           {/* Tutor Role */}
           <Card 
             className="group cursor-pointer bg-gradient-card border-border/50 p-8 shadow-soft transition-all hover:scale-105 hover:shadow-glow"
-            onClick={() => navigate('/profile/tutor')}
+            onClick={() => handleRoleSelect('tutor')}
           >
             <div className="mb-6 inline-flex rounded-full bg-accent/10 p-6 text-accent transition-colors group-hover:bg-gradient-primary group-hover:text-white">
               <GraduationCap className="h-12 w-12" />
@@ -84,8 +131,9 @@ const RoleSelect = () => {
             </ul>
             <Button 
               className="w-full bg-gradient-primary shadow-glow transition-all group-hover:scale-105"
+              disabled={loading}
             >
-              Continue as Tutor
+              {loading ? "Loading..." : "Continue as Tutor"}
             </Button>
           </Card>
         </div>
